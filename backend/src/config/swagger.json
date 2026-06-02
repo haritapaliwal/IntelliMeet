@@ -1,0 +1,228 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Hintro Meeting Intelligence API Docs",
+    "description": "Comprehensive interactive API documentation for the Hintro Meeting Intelligence Service backend, featuring JWT security integration, tracing headers, and structured JSON payloads.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter your signed JWT auth token to access protected endpoints."
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Check if the API server is up and running.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Server is fully operational.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "UP"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/evaluation": {
+      "get": {
+        "summary": "Evaluation Metadata",
+        "description": "Retrieve candidate evaluation metadata details required by the assignment guidelines.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Metadata returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "candidateName": { "type": "string", "example": "John Doe" },
+                    "email": { "type": "string", "example": "john@example.com" },
+                    "repositoryUrl": { "type": "string", "example": "https://github.com/example/project" },
+                    "deployedUrl": { "type": "string", "example": "https://example.com" },
+                    "externalIntegration": { "type": "string", "example": "Discord Webhook" },
+                    "features": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["Authentication", "AI Analysis", "Reminder Scheduler"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "summary": "User Registration",
+        "description": "Register a new profile and receive an authentication token.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "name"],
+                "properties": {
+                  "email": { "type": "string", "example": "user@example.com" },
+                  "password": { "type": "string", "example": "mypassword123" },
+                  "name": { "type": "string", "example": "Alice Cooper" }
+                }
+              }
+            }
+          },
+          "responses": {}
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "User Login",
+        "description": "Exchange credentials for a signed JWT access token.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "user@example.com" },
+                  "password": { "type": "string", "example": "mypassword123" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meetings": {
+      "post": {
+        "summary": "Create Meeting",
+        "description": "Saves a new meeting profile with raw transcript dialogue blocks.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "meetingDate", "transcript"],
+                "properties": {
+                  "title": { "type": "string", "example": "Sprint Sync" },
+                  "meetingDate": { "type": "string", "example": "2026-06-01T10:00:00Z" },
+                  "participants": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["alice@example.com", "bob@example.com"]
+                  },
+                  "transcript": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "timestamp": { "type": "string", "example": "00:10" },
+                        "speaker": { "type": "string", "example": "John" },
+                        "text": { "type": "string", "example": "We must finalize deployment next Tuesday." }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Meetings",
+        "description": "Fetch user meetings with pagination and search parameters.",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ]
+      }
+    },
+    "/api/meetings/{id}/analyze": {
+      "post": {
+        "summary": "Generate AI Insights",
+        "description": "Calls Gemini or Groq to extract summaries, decisions, follow-ups, and action items with citations.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ]
+      }
+    },
+    "/api/action-items": {
+      "get": {
+        "summary": "List Action Items",
+        "description": "List and filter action items extracted from analyzed meetings.",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["PENDING", "IN_PROGRESS", "COMPLETED"] } },
+          { "name": "assignee", "in": "query", "schema": { "type": "string" } },
+          { "name": "meetingId", "in": "query", "schema": { "type": "string" } }
+        ]
+      }
+    },
+    "/api/action-items/{id}/status": {
+      "patch": {
+        "summary": "Update Task Status",
+        "description": "Change task state on the Kanban checklist.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["PENDING", "IN_PROGRESS", "COMPLETED"], "example": "IN_PROGRESS" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/action-items/trigger-reminders": {
+      "post": {
+        "summary": "Run Background Reminder Job Manually",
+        "description": "Instantly executes the overdue action item scan and webhook notification dispatch for review."
+      }
+    }
+  }
+}
