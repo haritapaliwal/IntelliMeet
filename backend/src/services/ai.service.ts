@@ -177,7 +177,7 @@ Ensure the JSON matches this structure exactly. Return ONLY the raw JSON string.
           content: systemPrompt,
         },
       ],
-      model: 'llama-3.1-70b-versatile',
+      model: 'llama-3.3-70b-specdec',
       response_format: { type: 'json_object' },
       temperature: 0.1,
     });
