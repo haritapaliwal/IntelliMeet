@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Database Service (MongoDB)
+  mongo:
+    image: mongo:6.0
+    container_name: intellimeet-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - intellimeet-net
+
+  # Backend Express API Service
+  backend:
+    build: ./backend
+    container_name: intellimeet-api
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/intellimeet
+      - JWT_SECRET=supersecret_intellimeet_jwt_key
+      - JWT_EXPIRES_IN=24h
+      - GEMINI_API_KEY=
+      - GROQ_API_KEY=
+      - DISCORD_WEBHOOK_URL=
+      - CRON_SCHEDULE=* * * * *
+    depends_on:
+      - mongo
+    networks:
+      - intellimeet-net
+
+  # Frontend Static Asset Client Service
+  frontend:
+    build: ./frontend
+    container_name: intellimeet-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - intellimeet-net
+
+volumes:
+  mongo-data:
+
+networks:
+  intellimeet-net:
+    driver: bridge
